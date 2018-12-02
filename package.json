@@ -1,0 +1,32 @@
+{
+  "name": "gonegonegone",
+  "version": "1.0.0",
+  "description": "gone are/were the days",
+  "main": "app.js",
+  "dependencies": {
+    "fluent-ffmpeg": "^2.1.2",
+    "fs-promise": "^2.0.3",
+    "request": "^2.88.0",
+    "request-promise-native": "^1.0.5",
+    "striptags": "^3.1.1"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/aphid/gonegonegone.git"
+  },
+  "keywords": [
+    "scraping",
+    "news",
+    "chant"
+  ],
+  "author": "abram stern (aphid)",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/aphid/gonegonegone/issues"
+  },
+  "homepage": "https://github.com/aphid/gonegonegone#readme"
+}
