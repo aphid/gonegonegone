@@ -24,6 +24,7 @@ var Gone = function (object) {
 
     }
     this.start = parseInt(this.start, 10);
+    this.finds = [];
 };
 
 Gone.prototype.fetchVideo = async function () {
@@ -107,7 +108,7 @@ Gone.prototype.speech2text = async function () {
 Gone.prototype.processSpeech = async function (inc) {
     console.log("processing speech");
     //console.log(inc);
-    this.finds = [];
+    var finds = [];
     inc = inc.split(/\n/);
     var repl = new RegExp(this.phrase, "gi");
 
@@ -127,12 +128,11 @@ Gone.prototype.processSpeech = async function (inc) {
                 confidence: i[2]
             };
             console.log(find);
-            this.finds.push(find);
+            finds.push(find);
         }
     }
-    await fs.writeFile('data.json', JSON.stringify(gones, undefined, 2));
-
-    //await fs.writeFile("found.json", JSON.stringify(gones, undefined, 2));
+    this.finds = finds;
+    console.log(this);
 
 
 };
@@ -222,7 +222,10 @@ var go = async function () {
         await gone.tcodeOpus();
         await gone.tcodeWav();
         await gone.speech2text();
+        await fs.writeFile("data.json", JSON.stringify(gones, undefined, 2));
+
     }
+
     var found = [];
     for (let gone of gones) {
         if (gone.found) {
