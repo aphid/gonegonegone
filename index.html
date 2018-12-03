@@ -77,6 +77,9 @@
         if (!gone.finds.length) {
             return false;
         }
+
+
+
         cont.classList.add("container");
         cont.textContent = gone.identifier;
         let title = document.createElement("div");
@@ -92,13 +95,13 @@
         if (len < 2) {
             vid.setAttribute("controls", true);
         }
-        if (len > 6 && len % 2 === 1) {
+        if (len > 10) {
             document.querySelectorAll("video")[0].remove();
             document.querySelectorAll("video")[0].remove();
         }
 
         vid.dataset.confidence = gone.finds[0].confidence;
-        vid.src = gone.localFile;
+        vid.src = gone.localNormalized;
         document.body.appendChild(vid);
         vid.scrollIntoView(true);
         await firstPlay(vid, gone);
