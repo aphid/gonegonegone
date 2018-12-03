@@ -1,0 +1,151 @@
+<!doctype html>
+<html>
+
+<head>
+    <title>gone gone gone</title>
+    <style>
+        body {
+            background: #110a1a;
+        }
+
+        video {
+            width: 45vw;
+            margin-right: 25px;
+            display: inline-block;
+        }
+
+        container {
+            position: relative;
+            height: auto;
+            width: auto;
+            border: 3px solid orange;
+        }
+
+        .title {
+            position: relative;
+            text-overflow: ellipsis;
+            top: 0;
+            left: 0;
+            color: papayawhip;
+            text-shadow: 1px 1px 1px black;
+        }
+
+    </style>
+</head>
+
+<body>
+
+</body>
+<script>
+    var init = async function() {
+        var data = await fetch("data.json");
+        data = await data.json();
+        for (let i = 0; i < data.length; i++) {
+            console.log(i);
+            await processGone(data[i]);
+        }
+    }
+
+
+    init();
+
+
+    var processGone = async function(gone) {
+        let cont = document.createElement("div");
+        gone.finds.sort(sortFinds);
+
+        cont.classList.add("container");
+        cont.textContent = gone.identifier;
+        let title = document.createElement("div");
+        title.classList.add("title");
+        title.textContent = gone.title;
+        cont.appendChild(title);
+        let vid = document.createElement("video");
+        vid.setAttribute("id", gone.identifier);
+        vid.dataset.start = gone.finds[0].start;
+        vid.dataset.end = gone.finds[0].end;
+        vid.dataset.confidence = gone.finds[0].confidence;
+        vid.src = gone.localFile;
+        document.body.appendChild(vid);
+        await firstPlay(vid, gone);
+        await playAll();
+        //document.body.appendChild(cont);
+
+
+    }
+
+
+    async function playAll() {
+        var vids = document.querySelectorAll("video");
+        var proms = [];
+        for (let v of vids) {
+            proms.push(playOnce(v));
+        };
+        return await Promise.all(proms);
+
+    };
+
+    async function playOnce(vid) {
+        return new Promise(function(resolve) {
+            var start = vid.dataset.start;
+            var end = vid.dataset.end;
+            vid.currentTime = vid.dataset.start;
+            vid.addEventListener("timeupdate", function tim(e) {
+                if (vid.currentTime > end) {
+                    vid.currentTime = start;
+                    vid.pause();
+                    vid.removeEventListener("timeupdate", tim);
+                    resolve();
+                }
+            });
+            vid.play();
+
+        })
+    };
+
+    async function firstPlay(vid, gone) {
+        pauseAllBut(vid);
+        var start = gone.finds[0].start;
+        var end = parseInt(gone.finds[0].end, 10) + 8;
+        var confidence = gone.finds[0].confidence;
+        console.log(start, end, confidence);
+        console.dir(gone.finds);
+        return new Promise(function(resolve) {
+            vid.addEventListener("loadedmetadata", function() {
+
+                let start = gone.finds[0].start;
+                console.log(gone.identifier, start);
+                vid.currentTime = start;
+                vid.play();
+            }, {
+                once: true
+            });
+            vid.addEventListener("timeupdate", function tim(e) {
+                if (vid.currentTime > end) {
+                    vid.pause();
+                    vid.removeEventListener("timeupdate", tim);
+                    resolve();
+                }
+            });
+        });
+    }
+
+    function pauseAllBut(target) {
+        for (let v of document.querySelectorAll("video")) {
+            if (v.getAttribute("id") !== target.getAttribute("id")) {
+                v.pause();
+            }
+        }
+    }
+
+    function sortFinds(a, b) {
+        if (a.confidence < b.confidence)
+            return 1;
+        if (a.confidence > b.confidence)
+            return -1;
+        return 0;
+    }
+
+</script>
+
+</html>
