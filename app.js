@@ -62,6 +62,34 @@ Gone.prototype.tcodeOpus = async function () {
     });
 }
 
+
+
+Gone.prototype.tcodeNorm = async function () {
+    var gon = this;
+    console.log("transcodig normalized video");
+    var path = this.localFile.replace(".mp4", "_normalized.mp4");
+
+    return new Promise(async function (resolve) {
+        if (await fs.exists(path)) {
+            console.log("file exists");
+            gon.localNormalized = path;
+            resolve();
+        }
+        //ffmpeg -i input.wav -filter:a loudnorm output.wav
+        var encode = cp.exec('ffmpeg -i ' + gon.localFile + ' -filter:a loudnorm -vcodec copy ' + path, (error, stdout, stderr) => {
+            if (error) {
+                console.error(`exec error: ${error}`);
+                return;
+            }
+            console.log(`stdout: ${stdout}`);
+            console.log(`stderr: ${stderr}`);
+            gon.localPCM = path;
+            resolve();
+        });
+    });
+
+}
+
 Gone.prototype.tcodeWav = async function () {
     var gon = this;
     console.log("transcodig wav");
@@ -221,6 +249,7 @@ var go = async function () {
         await gone.fetchVideo();
         await gone.tcodeOpus();
         await gone.tcodeWav();
+        await gone.tcodeNorm();
         await gone.speech2text();
         await fs.writeFile("data.json", JSON.stringify(gones, undefined, 2));
 
