@@ -65,6 +65,7 @@
             console.log(i);
             await processGone(data[i]);
         }
+	init();
     }
 
 
@@ -146,6 +147,9 @@
         pauseAllBut(vid);
         var start = gone.finds[0].start;
         var end = parseInt(gone.finds[0].end, 10) + 8;
+	if (end > vid.duration){
+		end = vid.duration - 2;
+	}
         var confidence = gone.finds[0].confidence;
         console.log(start, end, confidence);
         console.dir(gone.finds);
@@ -161,7 +165,7 @@
             });
             vid.addEventListener("timeupdate", function tim(e) {
                 vid.removeAttribute("controls");
-                if (vid.currentTime > end) {
+		if (vid.currentTime > end || vid.currentTime > vid.duration - 2) {
                     vid.pause();
                     vid.removeEventListener("timeupdate", tim);
                     resolve();

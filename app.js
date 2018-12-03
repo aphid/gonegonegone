@@ -76,7 +76,7 @@ Gone.prototype.tcodeNorm = async function () {
             resolve();
         }
         //ffmpeg -i input.wav -filter:a loudnorm output.wav
-        var encode = cp.exec('ffmpeg -i ' + gon.localFile + ' -filter:a loudnorm -vcodec copy ' + path, (error, stdout, stderr) => {
+        var encode = cp.exec('ffmpeg -y -analyzeduration 999999999 -probesize 999999999 -i ' + gon.localFile + ' -filter:a loudnorm -vcodec copy ' + path, { timeout: 50000 }, (error, stdout, stderr) => {
             if (error) {
                 console.error(`exec error: ${error}`);
                 return;
