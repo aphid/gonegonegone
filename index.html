@@ -37,29 +37,30 @@
 
 </body>
 <script>
-function shuffle(array) {
-       var currentIndex = array.length, temporaryValue, randomIndex;
+    function shuffle(array) {
+        var currentIndex = array.length,
+            temporaryValue, randomIndex;
 
-  // While there remain elements to shuffle...
-  while (0 !== currentIndex) {
+        // While there remain elements to shuffle...
+        while (0 !== currentIndex) {
 
-    // Pick a remaining element...
-    randomIndex = Math.floor(Math.random() * currentIndex);
-    currentIndex -= 1;
+            // Pick a remaining element...
+            randomIndex = Math.floor(Math.random() * currentIndex);
+            currentIndex -= 1;
 
-    // And swap it with the current element.
-    temporaryValue = array[currentIndex];
-    array[currentIndex] = array[randomIndex];
-    array[randomIndex] = temporaryValue;
-  }
+            // And swap it with the current element.
+            temporaryValue = array[currentIndex];
+            array[currentIndex] = array[randomIndex];
+            array[randomIndex] = temporaryValue;
+        }
 
-  return array;
-}  
+        return array;
+    }
 
-var init = async function() {
+    var init = async function() {
         var data = await fetch("data.json");
         data = await data.json();
-	data = shuffle(data);	
+        data = shuffle(data);
         for (let i = 0; i < data.length; i++) {
             console.log(i);
             await processGone(data[i]);
@@ -73,7 +74,9 @@ var init = async function() {
     var processGone = async function(gone) {
         let cont = document.createElement("div");
         gone.finds.sort(sortFinds);
-
+        if (!gone.finds.length) {
+            return false;
+        }
         cont.classList.add("container");
         cont.textContent = gone.identifier;
         let title = document.createElement("div");
@@ -84,13 +87,20 @@ var init = async function() {
         vid.setAttribute("id", gone.identifier);
         vid.dataset.start = gone.finds[0].start;
         vid.dataset.end = gone.finds[0].end;
-	if (document.querySelectorAll("video").length < 2){
-		vid.setAttribute("controls",true);
-	}
+
+        let len = document.querySelectorAll("video").length;
+        if (len < 2) {
+            vid.setAttribute("controls", true);
+        }
+        if (len > 6 && len % 2 === 1) {
+            document.querySelectorAll("video")[0].remove();
+            document.querySelectorAll("video")[0].remove();
+        }
+
         vid.dataset.confidence = gone.finds[0].confidence;
         vid.src = gone.localFile;
         document.body.appendChild(vid);
-	vid.scrollIntoView(true);
+        vid.scrollIntoView(true);
         await firstPlay(vid, gone);
         for (let i = 0; i < document.querySelectorAll("video").length; i++) {
             await playAll();
@@ -147,7 +157,7 @@ var init = async function() {
                 once: true
             });
             vid.addEventListener("timeupdate", function tim(e) {
-		vid.removeAttribute("controls");
+                vid.removeAttribute("controls");
                 if (vid.currentTime > end) {
                     vid.pause();
                     vid.removeEventListener("timeupdate", tim);
