@@ -68,7 +68,9 @@
         vid.src = gone.localFile;
         document.body.appendChild(vid);
         await firstPlay(vid, gone);
-        await playAll();
+        for (let i = 0; i < document.querySelectorAll("video").length; i++) {
+            await playAll();
+        }
         //document.body.appendChild(cont);
 
 
