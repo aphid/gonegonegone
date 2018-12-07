@@ -6,11 +6,12 @@
     <style>
         body {
             background: #110a1a;
+            margin:0; padding:0;
+            overflow-x:hidden;
         }
 
         video {
             width: 45vw;
-            margin-right: 25px;
             display: inline-block;
         }
 
@@ -96,7 +97,7 @@
         if (len < 2) {
             vid.setAttribute("controls", true);
         }
-        if (len > 10) {
+        if (len > 6) {
             document.querySelectorAll("video")[0].remove();
             document.querySelectorAll("video")[0].remove();
         }
@@ -104,9 +105,13 @@
         vid.dataset.confidence = gone.finds[0].confidence;
         vid.src = gone.localNormalized;
         document.body.appendChild(vid);
-        vid.scrollIntoView(true);
+        vid.scrollIntoView(false);
         await firstPlay(vid, gone);
-        for (let i = 0; i < document.querySelectorAll("video").length; i++) {
+	let plays = document.querySelectorAll("video").length;
+	if (plays > 5){
+	    plays = 5;
+	}
+        for (let i = 0; i < plays; i++) {
             await playAll();
         }
         //document.body.appendChild(cont);
@@ -150,6 +155,7 @@
 	if (end > vid.duration){
 		end = vid.duration - 2;
 	}
+	vid.scrollIntoView(false);
         var confidence = gone.finds[0].confidence;
         console.log(start, end, confidence);
         console.dir(gone.finds);
@@ -164,13 +170,15 @@
                 once: true
             });
             vid.addEventListener("timeupdate", function tim(e) {
-                vid.removeAttribute("controls");
 		if (vid.currentTime > end || vid.currentTime > vid.duration - 2) {
                     vid.pause();
                     vid.removeEventListener("timeupdate", tim);
                     resolve();
                 }
             });
+	    vid.addEventListener("play", function pla(e){
+                   vid.removeAttribute("controls");
+	    },{once: true});
         });
     }
 
