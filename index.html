@@ -6,28 +6,38 @@
     <style>
         body {
             background: #110a1a;
-            margin:0; padding:0;
-            overflow-x:hidden;
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
         }
 
         video {
-            width: 45vw;
-            display: inline-block;
+            position: absolute;
+            padding: 0;
+            margin: 0;
+            display: block;
+            height: 100%;
+            width: auto;
         }
 
-        container {
+        .container {
+            margin: 0;
             position: relative;
             height: auto;
-            width: auto;
-            border: 3px solid orange;
+            width: 33.3vw;
+            min-height: 24.75vw;
+            display: inline-block;
+            overflow: hidden;
+
         }
 
         .title {
-            position: relative;
+            position: absolute;
             text-overflow: ellipsis;
             top: 0;
             left: 0;
-            color: papayawhip;
+            color: orange;
+            font-family: sans-serif;
             text-shadow: 1px 1px 1px black;
         }
 
@@ -66,7 +76,7 @@
             console.log(i);
             await processGone(data[i]);
         }
-	init();
+        init();
     }
 
 
@@ -93,24 +103,29 @@
         vid.dataset.start = gone.finds[0].start;
         vid.dataset.end = gone.finds[0].end;
 
-        let len = document.querySelectorAll("video").length;
-        if (len < 2) {
-            vid.setAttribute("controls", true);
-        }
-        if (len > 6) {
-            document.querySelectorAll("video")[0].remove();
-            document.querySelectorAll("video")[0].remove();
-        }
+
 
         vid.dataset.confidence = gone.finds[0].confidence;
         vid.src = gone.localNormalized;
-        document.body.appendChild(vid);
+        document.body.appendChild(cont);
+        cont.appendChild(vid);
+
+        let len = document.querySelectorAll(".container").length;
+        if (len < 2) {
+            vid.setAttribute("controls", true);
+        }
+        if (len > 9) {
+            document.querySelectorAll(".container")[0].remove();
+            document.querySelectorAll(".container")[0].remove();
+            document.querySelectorAll(".container")[0].remove();
+        }
+
         vid.scrollIntoView(false);
         await firstPlay(vid, gone);
-	let plays = document.querySelectorAll("video").length;
-	if (plays > 5){
-	    plays = 5;
-	}
+        let plays = document.querySelectorAll("video").length;
+        if (plays > 5) {
+            plays = 5;
+        }
         for (let i = 0; i < plays; i++) {
             await playAll();
         }
@@ -152,10 +167,10 @@
         pauseAllBut(vid);
         var start = gone.finds[0].start;
         var end = parseInt(gone.finds[0].end, 10) + 8;
-	if (end > vid.duration){
-		end = vid.duration - 2;
-	}
-	vid.scrollIntoView(false);
+        if (end > vid.duration) {
+            end = vid.duration - 2;
+        }
+        vid.scrollIntoView(false);
         var confidence = gone.finds[0].confidence;
         console.log(start, end, confidence);
         console.dir(gone.finds);
@@ -170,15 +185,17 @@
                 once: true
             });
             vid.addEventListener("timeupdate", function tim(e) {
-		if (vid.currentTime > end || vid.currentTime > vid.duration - 2) {
+                if (vid.currentTime > end || vid.currentTime > vid.duration - 2) {
                     vid.pause();
                     vid.removeEventListener("timeupdate", tim);
                     resolve();
                 }
             });
-	    vid.addEventListener("play", function pla(e){
-                   vid.removeAttribute("controls");
-	    },{once: true});
+            vid.addEventListener("play", function pla(e) {
+                vid.removeAttribute("controls");
+            }, {
+                once: true
+            });
         });
     }
 
