@@ -123,23 +123,32 @@
         vid.scrollIntoView(false);
         await firstPlay(vid, gone);
         let plays = document.querySelectorAll("video").length;
-        if (plays > 5) {
-            plays = 5;
-        }
-        for (let i = 0; i < plays; i++) {
+        if (plays > 1) {
+            await playOnce(vid);
+            await playAll(vid);
+            await playOnce(vid);
+            await playAll(vid);
             await playAll();
+        } else {
+            await playOnce(vid);
         }
+
         //document.body.appendChild(cont);
 
 
     }
 
 
-    async function playAll() {
+    async function playAll(except) {
+
         var vids = document.querySelectorAll("video");
         var proms = [];
         for (let v of vids) {
-            proms.push(playOnce(v));
+            if (except === v) {
+                console.log("match");
+            } else {
+                proms.push(playOnce(v));
+            }
         };
         return await Promise.all(proms);
 
