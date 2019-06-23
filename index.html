@@ -128,6 +128,7 @@
             await playAll(vid);
             await playOnce(vid);
             await playAll(vid);
+            await sleep(250);
             await playAll();
         } else {
             await playOnce(vid);
@@ -137,8 +138,12 @@
 
 
     }
-
-
+    async function sleep(ms){
+        return new Promise(function(resolve, reject) {
+             setTimeout(()=> { resolve(0) }, ms);
+         });
+    }
+   
     async function playAll(except) {
 
         var vids = document.querySelectorAll("video");
