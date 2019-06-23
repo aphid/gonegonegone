@@ -26,18 +26,17 @@
             height: auto;
             display: inline-block;
             overflow: hidden;
-
+            transition: all 3s ease-in-out;
         }
         
         .single {
             width: 100vw;
             min-height: 99vh;
-            text-align: center;
         }
 
         .quad {
-            width: 25vw;
-            min-height: 49vh;
+            width: 50vw;
+            min-height: 37.125vw;
         }
         
         .non {
@@ -110,14 +109,15 @@
         cont.classList.add("container");
         if (len === 1){
             mode = "single";
-        } else if (len < 5){
-            mode = "quad";
-        } else {
+        } else if (len < 10){
             mode = "non";
-        }
+	} else {
+  	    mode = "non"; //future
+	}
         cont.classList.add(mode);
         contsMode(mode);
-        cont.textContent = gone.identifier;
+        await sleep(3000);
+	cont.textContent = gone.identifier;
         let title = document.createElement("div");
         title.classList.add("title");
         title.textContent = gone.title;
@@ -162,15 +162,17 @@
 
     }
 
-    function contsMode(mode){
-        for (let cont of document.querySelectorAll("container")){
+    async function contsMode(mode){
+	console.log("CHANGING MODE TO", mode);
+        for (let cont of document.querySelectorAll(".container")){
             for (let claz of cont.classList){
                 if (claz !== "container"){
+	            console.log("removing", claz);
                     cont.classList.remove(claz);
                 }
             }
 
-            cont.addClass(mode);
+            cont.classList.add(mode);
         }
     }
 
