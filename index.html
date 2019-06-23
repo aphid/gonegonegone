@@ -106,15 +106,17 @@
         let len = document.querySelectorAll(".container").length + 1;
 
 
-
+        let mode;
         cont.classList.add("container");
         if (len === 1){
-            cont.classList.add("single");
+            mode = "single";
         } else if (len < 5){
-            cont.classList.add("quad");
+            mode = "quad";
         } else {
-            cont.classList.add("non");
+            mode = "non";
         }
+        cont.classList.add(mode);
+        contsMode(mode);
         cont.textContent = gone.identifier;
         let title = document.createElement("div");
         title.classList.add("title");
@@ -159,6 +161,19 @@
 
 
     }
+
+    function contsMode(mode){
+        for (let cont of document.querySelectorAll("container")){
+            for (let claz of cont.classList){
+                if (claz !== "container"){
+                    cont.classList.remove(claz);
+                }
+            }
+
+            cont.addClass(mode);
+        }
+    }
+
     async function sleep(ms){
         return new Promise(function(resolve, reject) {
              setTimeout(()=> { resolve(0) }, ms);
