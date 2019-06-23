@@ -24,11 +24,25 @@
             margin: 0;
             position: relative;
             height: auto;
-            width: 33.3vw;
-            min-height: 24.75vw;
             display: inline-block;
             overflow: hidden;
 
+        }
+        
+        .single {
+            width: 100vw;
+            min-height: 99vh;
+            text-align: center;
+        }
+
+        .quad {
+            width: 25vw;
+            min-height: 49vh;
+        }
+        
+        .non {
+            width: 33.3vw;
+            min-height: 24.75vw;
         }
 
         .title {
@@ -89,10 +103,18 @@
         if (!gone.finds.length) {
             return false;
         }
+        let len = document.querySelectorAll(".container").length + 1;
 
 
 
         cont.classList.add("container");
+        if (len === 1){
+            cont.classList.add("single");
+        } else if (len < 5){
+            cont.classList.add("quad");
+        } else {
+            cont.classList.add("non");
+        }
         cont.textContent = gone.identifier;
         let title = document.createElement("div");
         title.classList.add("title");
@@ -110,7 +132,6 @@
         document.body.appendChild(cont);
         cont.appendChild(vid);
 
-        let len = document.querySelectorAll(".container").length;
         if (len < 2) {
             vid.setAttribute("controls", true);
         }
