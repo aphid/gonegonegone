@@ -181,7 +181,7 @@ var getGones = async function () {
     console.log("cmon");
     for (let q of queries) {
         console.log("trying ", q.phrase);
-        let json = await getJSON(q.url);
+        let json = await jsonz(q.url);
         for (let clip of json) {
             clip.phrase = q.phrase;
             gones.push(clip);
@@ -191,7 +191,6 @@ var getGones = async function () {
     await fs.writeFile('data.json', JSON.stringify(gones, undefined, 2));
     return gones;
 }
-
 var getJSON = function (url) {
     console.log('requesting ', url);
     return new Promise(function (resolve) {
@@ -208,6 +207,26 @@ var getJSON = function (url) {
     });
 
 }
+var jsonz = async function (url) {
+    console.log("getting jsons");
+    var done = false;
+    var counter = 1;
+    var results = [];
+    console.log("page ", counter);
+    while (!done) {
+        let res = await getJSON((url + "&page=" + counter));
+        if (!res.length) {
+            done = true;
+            console.log("done");
+            return results;
+        }
+        results = results.concat(res);
+        counter++;
+        console.log(results.length)
+    }
+}
+
+
 
 var getFile = function (url, dest) {
     console.log('trying ', url);
