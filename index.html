@@ -24,11 +24,24 @@
             margin: 0;
             position: relative;
             height: auto;
-            width: 33.3vw;
-            min-height: 24.75vw;
             display: inline-block;
             overflow: hidden;
+            transition: all 3s ease-in-out;
+        }
+        
+        .single {
+            width: 100vw;
+            min-height: 99vh;
+        }
 
+        .quad {
+            width: 50vw;
+            min-height: 37.125vw;
+        }
+        
+        .non {
+            width: 33.3vw;
+            min-height: 24.75vw;
         }
 
         .title {
@@ -89,11 +102,22 @@
         if (!gone.finds.length) {
             return false;
         }
+        let len = document.querySelectorAll(".container").length + 1;
 
 
-
+        let mode;
         cont.classList.add("container");
-        cont.textContent = gone.identifier;
+        if (len === 1){
+            mode = "single";
+        } else if (len < 10){
+            mode = "non";
+	} else {
+  	    mode = "non"; //future
+	}
+        cont.classList.add(mode);
+        contsMode(mode);
+        await sleep(3000);
+	cont.textContent = gone.identifier;
         let title = document.createElement("div");
         title.classList.add("title");
         title.textContent = gone.title;
@@ -110,7 +134,6 @@
         document.body.appendChild(cont);
         cont.appendChild(vid);
 
-        let len = document.querySelectorAll(".container").length;
         if (len < 2) {
             vid.setAttribute("controls", true);
         }
@@ -128,6 +151,7 @@
             await playAll(vid);
             await playOnce(vid);
             await playAll(vid);
+            await sleep(250);
             await playAll();
         } else {
             await playOnce(vid);
@@ -138,7 +162,26 @@
 
     }
 
+    async function contsMode(mode){
+	console.log("CHANGING MODE TO", mode);
+        for (let cont of document.querySelectorAll(".container")){
+            for (let claz of cont.classList){
+                if (claz !== "container"){
+	            console.log("removing", claz);
+                    cont.classList.remove(claz);
+                }
+            }
 
+            cont.classList.add(mode);
+        }
+    }
+
+    async function sleep(ms){
+        return new Promise(function(resolve, reject) {
+             setTimeout(()=> { resolve(0) }, ms);
+         });
+    }
+   
     async function playAll(except) {
 
         var vids = document.querySelectorAll("video");
