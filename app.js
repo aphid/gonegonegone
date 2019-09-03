@@ -1,7 +1,7 @@
 var rp = require('request-promise-native');
 var fs = require('fs-promise');
 var ffmpeg = require('fluent-ffmpeg');
-
+var moment = require('moment');
 var striptags = require('striptags');
 var cp = require('child_process');
 var data = "gones.json";
@@ -145,7 +145,6 @@ Gone.prototype.processSpeech = async function (inc) {
         console.log(i);
         i = i.replace(repl, "").trim();
         console.log(i);
-
         if (i.length > 5 && !i.includes("!!!")) {
             console.log("processing a find");
             console.log(i);
@@ -173,7 +172,7 @@ var getGones = async function () {
         phrase: "gone were the days"
     }];
     for (let q of queries) {
-        let queryphrase = q.phrase.replace(" ", "%20");
+        let queryphrase = q.phrase.replace(/\s/g, "%20");
         q.url = "http://archive.org/details/tv?q=%22" + queryphrase + "%22&output=json";
     }
     /* old var queries = ["http://archive.org/details/tv?q=%22gone%20are%20the%20days%22&output=json", "http://archive.org/details/tv?q=%22gone%20were%20the%20days%22&output=json"]; */
@@ -185,8 +184,9 @@ var getGones = async function () {
         for (let clip of json) {
             clip.phrase = q.phrase;
             gones.push(clip);
-        }
-        console.log(json.length);
+
+	}
+	console.log(json.length);
     }
     await fs.writeFile('data.json', JSON.stringify(gones, undefined, 2));
     return gones;
@@ -256,7 +256,34 @@ var processGones = function (gones) {
     for (let gone of gones) {
         nGones.push(new Gone(gone))
     }
-    return nGones;
+    return nGones.sort(compareDates).reverse();
+};
+
+var compareDates = function(a,b){
+   let aDate = string2date(a.title);
+   let bDate = string2date(b.title);
+   console.log(aDate, bDate);
+   if (aDate > bDate) {
+     console.log("a");
+     return -1;
+   } else {
+     console.log("b");
+     return 1;
+   }
+ 
+ 
+};
+
+var string2date = function(str){
+ 
+   var datestring = str.split(" : ");
+   datestring = datestring[datestring.length - 1];
+   datestring = datestring.split("-");
+    datestring = datestring[0] + datestring[1].split(" ")[1];
+
+    var test = moment(datestring, "MMMM Do, YYYY hh:mmA z").format("X");
+    return test;
+
 };
 
 var go = async function () {
