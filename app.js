@@ -28,6 +28,9 @@ var Gone = function (object) {
 };
 
 Gone.prototype.fetchVideo = async function () {
+    if (fs.existsSync(this.identifier + ".mp4")){
+	return Promise.resolve();
+    }
     var start = this.start - 20;
     if (start < 0) {
         start = 0;
@@ -44,7 +47,7 @@ Gone.prototype.fetchVideo = async function () {
 
 Gone.prototype.tcodeOpus = async function () {
     var gon = this;
-    console.log("transcodig audio");
+    console.log("transcoding audio");
     var path = this.localFile.replace(".mp4", ".opus");
     console.log(path);
 
@@ -66,7 +69,7 @@ Gone.prototype.tcodeOpus = async function () {
 
 Gone.prototype.tcodeNorm = async function () {
     var gon = this;
-    console.log("transcodig normalized video");
+    console.log("transcoding normalized video");
     var path = this.localFile.replace(".mp4", "_normalized.mp4");
 
     return new Promise(async function (resolve) {
@@ -92,7 +95,7 @@ Gone.prototype.tcodeNorm = async function () {
 
 Gone.prototype.tcodeWav = async function () {
     var gon = this;
-    console.log("transcodig wav");
+    console.log("transcoding wav");
     var path = this.localFile.replace(".mp4", ".wav");
 
     return new Promise(async function (resolve) {
@@ -118,11 +121,17 @@ Gone.prototype.tcodeWav = async function () {
 Gone.prototype.speech2text = async function () {
     var gon = this;
     var path = this.localFile.replace(".mp4", ".txt");
+    if (fs.existsSync(path) && fs.statSync(path).size){
+	console.log("already sphinx'd");
+	return Promise.resolve();
+    }
     return new Promise(async function (resolve) {
-        var listen = cp.exec('pocketsphinx_continuous -infile ' + gon.localPCM + ' -kws_threshold /1e-40/ -time yes -logfn /dev/null -keyphrase "' + gon.phrase + '"', async (error, stdout, stderr) => {
+	var command = 'pocketsphinx_continuous -infile ' + gon.localPCM + ' -kws_threshold /1e-40/ -time yes -logfn /dev/null -keyphrase "' + gon.phrase + '"';
+	console.log(command);
+        var listen = cp.exec(command, async (error, stdout, stderr) => {
             if (error) {
                 console.error(`exec error: ${error}`);
-                return;
+                throw(error);
             }
             var results = gon.processSpeech(stdout);
             console.log(`stderr: ${stderr}`);
