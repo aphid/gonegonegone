@@ -123,6 +123,9 @@ Gone.prototype.speech2text = async function () {
     var path = this.localFile.replace(".mp4", ".txt");
     if (fs.existsSync(path) && fs.statSync(path).size){
 	console.log("already sphinx'd");
+	var sp = fs.readFileSync(path, "utf8");
+	console.log(sp);
+	gon.processSpeech(sp);
 	return Promise.resolve();
     }
     return new Promise(async function (resolve) {
@@ -296,9 +299,11 @@ var string2date = function(str){
 };
 
 var go = async function () {
-    var gones = await getGones();
+    //var gones = await getGones();
+    //gones = processGones(gones);
+    //await fs.writeFile("processed.json", JSON.stringify(gones, undefined, 2));
+    var gones = JSON.parse(fs.readFileSync("processed.json"));
     gones = processGones(gones);
-    await fs.writeFile("processed.json", JSON.stringify(gones, undefined, 2));
     for (let gone of gones) {
         //console.log(gone);
         await gone.fetchVideo();
