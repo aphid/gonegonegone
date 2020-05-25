@@ -5,6 +5,7 @@ var moment = require('moment');
 var striptags = require('striptags');
 var cp = require('child_process');
 var data = "gones.json";
+var mediaDir = "/mnt/kriegspiel/gones/"
 
 
 var gones = [];
@@ -40,7 +41,7 @@ Gone.prototype.fetchVideo = async function () {
     var url = "http://archive.org/download/" + this.identifier + "/" + this.identifier + ".mp4?t=" + start + "/" + end + "&ignore=x.mp4";
     console.log("fetching: ", url);
 
-    var asdf = await getFile(url, "media/" + this.identifier + ".mp4");
+    var asdf = await getFile(url, mediaDir + this.identifier + ".mp4");
     this.localFile = asdf;
 
 };
@@ -268,7 +269,7 @@ var processGones = function (gones) {
     for (let gone of gones) {
         nGones.push(new Gone(gone))
     }
-    return nGones.sort(compareDates).reverse();
+    return nGones.sort(compareDates); //.reverse();
 };
 
 var compareDates = function(a,b){
@@ -303,6 +304,7 @@ var go = async function () {
     //gones = processGones(gones);
     //await fs.writeFile("processed.json", JSON.stringify(gones, undefined, 2));
     var gones = JSON.parse(fs.readFileSync("processed.json"));
+    console.log(gones.length);
     gones = processGones(gones);
     for (let gone of gones) {
         //console.log(gone);
