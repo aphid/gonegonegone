@@ -7,10 +7,12 @@ var dmp = require('diff-match-patch-node');
 var striptags = require('striptags');
 var cp = require('child_process');
 var data = "gones.json";
-var mediaDir = "/var/www/html/gonegonegone/media/"
+//var mediaDir = "/var/www/html/gonegonegone/media/"
+var mediaDir = "/mnt/kriegspiel/gones/"
 
 
 var gones = [];
+var nots = [];
 /* ffmpeg.getAvailableFormats(function (err, codecs) {
     console.log('Available codecs:');
     console.dir(codecs);
@@ -21,12 +23,13 @@ var Gone = function (object) {
         this[thing] = object[thing];
     }
     this.transcript = striptags(this.snip);
-    if (this.transcript.includes("gone are the days") || this.transcript.includes("gone were the days")) {
+    if (this.transcript.toLowerCase.includes("gone are the day") || this.transcript.toLowerCase.includes("gone were the day")) {
         console.log(this.identifier, "found phrase");
         this.found = true;
 
     } else {
-        console.log("not found in:", this.identifier, this.transcript)
+        console.log("not found in:", this.identifier, this.transcript);
+	nots.push({ id: this.identifier, transcript: this.transcript});
     }
     this.start = parseInt(this.start, 10);
     this.finds = [];
@@ -278,7 +281,7 @@ var processGones = function (gones) {
     let thisGone = 0;
     for (let gone of gones) {
 
-        if (!matched(gone, gones)) {
+        if (!matched(gone, nGones)) {
             nGones.push(new Gone(gone))
         }
         console.log(thisGone, "/", gones.length)
@@ -289,16 +292,24 @@ var processGones = function (gones) {
 
 var matched = function(gone, gones){
     for (let gon of gones){
+
         if (gon.identifier === gone.identifier){
-            console.log("exact")
+            //console.log("exact")
+	
         } else {
-            let dist = dmp().diff_main(gone.transcript, gon.transcript);
-            //console.log(dist.length);
-            if (dist.length < 100){
-                console.log(gone.transcript.substr(0,200),gon.transcript.substr(0,200));
-                return true;
+            let show = gone.identifier.split("_");
+	    show = show[show.length - 1];
+	    let gonshow = gon.identifier.split("_");
+	    gonshow = gonshow[show.length - 1];
+	    if (show === gonshow){
+	        let dist = dmp().diff_main(striptags(gone.snip), gon.transcript);
+                //console.log(dist.length);
+                if (dist.length < 100){
+                    console.log(striptags(gone.snip).substr(0,200),gon.transcript.substr(0,200));
+                    return true;
+                }
             }
-        }
+	}
     }
 
 
@@ -332,12 +343,13 @@ var string2date = function (str) {
 };
 
 var go = async function () {
-    //var gones = await getGones();
-    //gones = processGones(gones);
-    //await fs.writeFile("processed.json", JSON.stringify(gones, undefined, 2));
-    var gones = JSON.parse(fs.readFileSync("processed.json"));
-    console.log(gones.length);
+    var gones = await getGones();
     gones = processGones(gones);
+    await fs.writeFile("processed.json", JSON.stringify(gones, undefined, 2));
+    await fs.writeFile("nots.json", JSON.stringify(nots, undefined, 2));
+    //var gones = JSON.parse(fs.readFileSync("processed.json"));
+    console.log(gones.length);
+    //gones = processGones(gones);
     for (let gone of gones) {
         //console.log(gone);
         await gone.fetchVideo();
