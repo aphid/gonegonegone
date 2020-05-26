@@ -2,10 +2,12 @@ var rp = require('request-promise-native');
 var fs = require('fs-promise');
 var ffmpeg = require('fluent-ffmpeg');
 var moment = require('moment');
+var dmp = require('diff-match-patch-node');
+
 var striptags = require('striptags');
 var cp = require('child_process');
 var data = "gones.json";
-var mediaDir = "/mnt/kriegspiel/gones/"
+var mediaDir = "/var/www/html/gonegonegone/media/"
 
 
 var gones = [];
@@ -23,14 +25,16 @@ var Gone = function (object) {
         console.log(this.identifier, "found phrase");
         this.found = true;
 
+    } else {
+        console.log("not found in:", this.identifier, this.transcript)
     }
     this.start = parseInt(this.start, 10);
     this.finds = [];
 };
 
 Gone.prototype.fetchVideo = async function () {
-    if (fs.existsSync(this.identifier + ".mp4")){
-	return Promise.resolve();
+    if (fs.existsSync(this.identifier + ".mp4")) {
+        return Promise.resolve();
     }
     var start = this.start - 20;
     if (start < 0) {
@@ -58,11 +62,16 @@ Gone.prototype.tcodeOpus = async function () {
             gon.localOpus = path;
             resolve();
         }
-        ffmpeg(gon.localFile).audioCodec('libopus').on('end', function () {
-            gon.localOpus = path;
-            resolve();
-        }).output(path).run();
-
+        try {
+            ffmpeg(gon.localFile).audioCodec('libopus').on('start', function (cmd) {
+                console.log("invoked with", cmd);
+            }).on('end', function () {
+                gon.localOpus = path;
+                resolve();
+            }).output(path).run();
+        } catch (e) {
+            throw (e);
+        }
     });
 }
 
@@ -122,20 +131,20 @@ Gone.prototype.tcodeWav = async function () {
 Gone.prototype.speech2text = async function () {
     var gon = this;
     var path = this.localFile.replace(".mp4", ".txt");
-    if (fs.existsSync(path) && fs.statSync(path).size){
-	console.log("already sphinx'd");
-	var sp = fs.readFileSync(path, "utf8");
-	console.log(sp);
-	gon.processSpeech(sp);
-	return Promise.resolve();
+    if (fs.existsSync(path) && fs.statSync(path).size) {
+        console.log("already sphinx'd");
+        var sp = fs.readFileSync(path, "utf8");
+        console.log(sp);
+        gon.processSpeech(sp);
+        return Promise.resolve();
     }
     return new Promise(async function (resolve) {
-	var command = 'pocketsphinx_continuous -infile ' + gon.localPCM + ' -kws_threshold /1e-40/ -time yes -logfn /dev/null -keyphrase "' + gon.phrase + '"';
-	console.log(command);
+        var command = 'pocketsphinx_continuous -infile ' + gon.localPCM + ' -kws_threshold /1e-40/ -time yes -logfn /dev/null -keyphrase "' + gon.phrase + '"';
+        console.log(command);
         var listen = cp.exec(command, async (error, stdout, stderr) => {
             if (error) {
                 console.error(`exec error: ${error}`);
-                throw(error);
+                throw (error);
             }
             var results = gon.processSpeech(stdout);
             console.log(`stderr: ${stderr}`);
@@ -198,8 +207,8 @@ var getGones = async function () {
             clip.phrase = q.phrase;
             gones.push(clip);
 
-	}
-	console.log(json.length);
+        }
+        console.log(json.length);
     }
     await fs.writeFile('data.json', JSON.stringify(gones, undefined, 2));
     return gones;
@@ -266,32 +275,55 @@ var getFile = function (url, dest) {
 
 var processGones = function (gones) {
     var nGones = [];
+    let thisGone = 0;
     for (let gone of gones) {
-        nGones.push(new Gone(gone))
+
+        if (!matched(gone, gones)) {
+            nGones.push(new Gone(gone))
+        }
+        console.log(thisGone, "/", gones.length)
+        thisGone++;
     }
     return nGones.sort(compareDates); //.reverse();
 };
 
-var compareDates = function(a,b){
-   let aDate = string2date(a.title);
-   let bDate = string2date(b.title);
-   console.log(aDate, bDate);
-   if (aDate > bDate) {
-     console.log("a");
-     return -1;
-   } else {
-     console.log("b");
-     return 1;
-   }
- 
- 
+var matched = function(gone, gones){
+    for (let gon of gones){
+        if (gon.identifier === gone.identifier){
+            console.log("exact")
+        } else {
+            let dist = dmp().diff_main(gone.transcript, gon.transcript);
+            //console.log(dist.length);
+            if (dist.length < 100){
+                console.log(gone.transcript.substr(0,200),gon.transcript.substr(0,200));
+                return true;
+            }
+        }
+    }
+
+
+}
+
+var compareDates = function (a, b) {
+    let aDate = string2date(a.title);
+    let bDate = string2date(b.title);
+    console.log(aDate, bDate);
+    if (aDate > bDate) {
+        console.log("a");
+        return -1;
+    } else {
+        console.log("b");
+        return 1;
+    }
+
+
 };
 
-var string2date = function(str){
- 
-   var datestring = str.split(" : ");
-   datestring = datestring[datestring.length - 1];
-   datestring = datestring.split("-");
+var string2date = function (str) {
+
+    var datestring = str.split(" : ");
+    datestring = datestring[datestring.length - 1];
+    datestring = datestring.split("-");
     datestring = datestring[0] + datestring[1].split(" ")[1];
 
     var test = moment(datestring, "MMMM Do, YYYY hh:mmA z").format("X");

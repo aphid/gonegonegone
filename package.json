@@ -4,6 +4,7 @@
   "description": "gone are/were the days",
   "main": "app.js",
   "dependencies": {
+    "diff-match-patch-node": "^0.9.1",
     "fluent-ffmpeg": "^2.1.2",
     "fs-promise": "^2.0.3",
     "moment": "^2.24.0",
