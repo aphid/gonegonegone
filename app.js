@@ -23,7 +23,8 @@ var Gone = function (object) {
         this[thing] = object[thing];
     }
     this.transcript = striptags(this.snip);
-    if (this.transcript.toLowerCase.includes("gone are the day") || this.transcript.toLowerCase.includes("gone were the day")) {
+    console.log(this.transcript);
+    if (this.transcript.replace(/\./g,"")toLowerCase().includes("gone are the day") || this.transcript.toLowerCase().includes("gone were the day")) {
         console.log(this.identifier, "found phrase");
         this.found = true;
 
@@ -92,7 +93,7 @@ Gone.prototype.tcodeNorm = async function () {
             resolve();
         }
         //ffmpeg -i input.wav -filter:a loudnorm output.wav
-        var encode = cp.exec('ffmpeg -y -analyzeduration 999999999 -probesize 999999999 -i ' + gon.localFile + ' -filter:a loudnorm -vcodec copy ' + path, { timeout: 50000 }, (error, stdout, stderr) => {
+        var encode = cp.exec('ffmpeg -y -analyzeduration 999999999 -probesize 999999999 -i ' + gon.localFile + ' -max_muxing_queue_size 99999 -filter:a loudnorm -filter:v scale=-2:320 ' + path, { timeout: 50000 }, (error, stdout, stderr) => {
             if (error) {
                 console.error(`exec error: ${error}`);
                 return;
