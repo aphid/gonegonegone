@@ -392,7 +392,7 @@ var matched = async function (gone) {
                 return false;
                 //console.log("new phrase:", gonwords);
             }
-        }
+	}
     }
     */
 
